@@ -21,12 +21,18 @@ button.sm{width:auto;padding:7px 12px;font-size:13px;margin:0 0 0 6px;border-rad
 .count{font-size:56px;font-weight:800;text-align:center;line-height:1}
 .sub{text-align:center;color:var(--mu);font-size:13px;margin-top:4px}
 video{width:100%;border-radius:12px;background:#000;max-height:260px;object-fit:cover}
-.item{padding:10px 0;border-bottom:1px solid var(--bd)}.item:last-child{border:0}
+.item{padding:10px 0;border-bottom:1px solid var(--bd);display:flex;gap:10px}.item:last-child{border:0}
+.item .tx{flex:1;min-width:0}
+.thumb{width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--bd)}
 .top{display:flex;justify-content:space-between;gap:8px;font-size:15px}
 .mu{color:var(--mu);font-size:13px}
 .acts{display:flex;justify-content:flex-end;margin-top:6px}
+#pprev{width:100%;max-height:220px;object-fit:contain;border-radius:10px;border:1px solid var(--bd);margin-top:8px;background:#000}
+.err{color:#dc2626;font-size:14px;margin-top:8px;min-height:18px;text-align:center}
 #msg{min-height:20px;text-align:center;font-size:14px;margin-top:8px}
-.hide{display:none}
+.hide{display:none!important}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;display:flex;align-items:center;justify-content:center;padding:16px}
+.ov .card{width:100%;max-width:400px;margin:0}
 footer{text-align:center;color:var(--mu);font-size:12px;margin:18px 0 8px}
 #splash{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s;padding:16px}
 #splash.out{opacity:0;pointer-events:none}
@@ -76,12 +82,16 @@ footer{text-align:center;color:var(--mu);font-size:12px;margin:18px 0 8px}
 <p>Développé par Lebkiri Lahcene</p>
 </div>
 
+<div id="dlg" class="ov hide"><div class="card"><p id="dtxt" style="margin:0 0 4px;font-size:16px"></p><button id="dyes"></button><button id="dno" class="sec">Annuler</button></div></div>
+<input id="pfile" type="file" accept="image/*" capture="environment" class="hide">
+
 <h1>♿ SAMSIC APMR X ALBA</h1>
 
 <div id="start" class="card">
   <label>Nom de l’agent</label><input id="agent" placeholder="Nom Prénom" autocomplete="name">
   <label>Terminal</label><input id="zone" value="Terminal 2AC">
   <button id="btnStart">Démarrer la vacation</button>
+  <div class="err" id="serr"></div>
 </div>
 
 <div id="main" class="hide">
@@ -97,14 +107,18 @@ footer{text-align:center;color:var(--mu);font-size:12px;margin:18px 0 8px}
     <label>Nom du passager</label><input id="fname" autocapitalize="characters">
     <label>Porte d’embarquement</label><input id="fgate" placeholder="Ex : K42" autocapitalize="characters">
     <label>N° de vol (facultatif)</label><input id="fflight" placeholder="Ex : AF1234" autocapitalize="characters">
+    <img id="pprev" class="hide" alt="Photo de la carte">
+    <button id="fphoto" class="sec">📸 Photo de la carte (preuve)</button>
+    <div class="err" id="ferr"></div>
     <button id="fsave">Enregistrer</button>
     <button id="fcancel" class="sec">Annuler</button>
   </div>
 
   <div id="actions" class="card">
     <video id="vid" class="hide" playsinline muted></video>
-    <button id="btnScan">📷 Scanner une carte d’embarquement</button>
+    <button id="btnScan">📷 Scanner le code de la carte</button>
     <button id="btnStop" class="sec hide">Arrêter la caméra</button>
+    <button id="btnPhoto" class="sec">📸 Photo de la carte (preuve)</button>
     <button id="btnAdd" class="sec">✏️ Ajouter manuellement</button>
     <div id="msg"></div>
   </div>
@@ -115,6 +129,7 @@ footer{text-align:center;color:var(--mu);font-size:12px;margin:18px 0 8px}
     <label>Observations pour le compte rendu (facultatif)</label>
     <textarea id="obs" rows="3" placeholder="Incident, remarque, panne, retard…"></textarea>
     <button id="btnEnd">Terminer et télécharger le rapport PDF</button>
+    <div class="err" id="eerr"></div>
     <button id="btnReset" class="dng">Annuler la vacation (effacer)</button>
   </div>
 </div>
@@ -124,49 +139,94 @@ footer{text-align:center;color:var(--mu);font-size:12px;margin:18px 0 8px}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-let S=null, reader=null, lastScan=0, editId=null, pending=null;
-const KEY='apmr_alba_v2', AKEY='apmr_alba_agent';
-function load(){try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){S=null}
-  try{const a=localStorage.getItem(AKEY);if(a)$('agent').value=a}catch(e){}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let S=null, reader=null, lastScan=0, editId=null, pending=null, curPhoto=null, photoFirst=false;
+const KEY='apmr_alba_v3', AKEY='apmr_alba_agent';
+function load(){
+  try{S=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('apmr_alba_v2')||'null')}catch(e){S=null}
+  try{const a=localStorage.getItem(AKEY);if(a)$('agent').value=a}catch(e){}
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
 function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return String(h)}
 function fmt(t){return new Date(t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
 function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function msg(t,ok){const m=$('msg');m.textContent=t;m.style.color=ok?'var(--ok)':'#dc2626'}
+function ask(t,yes){return new Promise(r=>{
+  $('dtxt').textContent=t;$('dyes').textContent=yes||'Confirmer';$('dlg').classList.remove('hide');
+  $('dyes').onclick=()=>{$('dlg').classList.add('hide');r(true)};
+  $('dno').onclick=()=>{$('dlg').classList.add('hide');r(false)};
+})}
 
-// Carte d’embarquement IATA (BCBP) : nom + vol. La porte n’y figure pas.
+// Carte d’embarquement IATA : le code contient le nom et le vol, jamais la porte.
 function parse(raw){
   if(raw.length<48||raw[0]!=='M')return null;
-  let nm=raw.substr(2,20).trim(),[last,first='']=nm.split('/');
+  let [last,first='']=raw.substr(2,20).trim().split('/');
   first=first.replace(/\s+(MR|MS|MRS|MISS|MSTR|DR)$/,'').trim();
   return {name:(last+' '+first).trim(),
     flight:raw.substr(36,3).trim()+raw.substr(39,5).trim().replace(/^0+/,''),
     key:hash(raw.substr(2,28)+raw.substr(36,13)+raw.substr(44,3))};
 }
-function openForm(d,title,note){
-  stopCam();
-  $('ftitle').textContent=title;$('fnote').textContent=note||'';
-  $('fname').value=d.name||'';$('fgate').value=d.gate||'';$('fflight').value=d.flight||'';
-  $('form').classList.remove('hide');$('actions').classList.add('hide');
-  setTimeout(()=>$(d.name?'fgate':'fname').focus(),50);
+function showPhoto(){
+  const p=$('pprev');
+  if(curPhoto){p.src=curPhoto.d;p.classList.remove('hide');$('fphoto').textContent='📸 Reprendre la photo'}
+  else{p.classList.add('hide');p.removeAttribute('src');$('fphoto').textContent='📸 Photo de la carte (preuve)'}
 }
-function closeForm(){editId=null;pending=null;$('form').classList.add('hide');$('actions').classList.remove('hide')}
+function openForm(d,title,note){
+  stopCam();curPhoto=d.photo||null;
+  $('ftitle').textContent=title;$('fnote').textContent=note||'';$('ferr').textContent='';
+  $('fname').value=d.name||'';$('fgate').value=d.gate||'';$('fflight').value=d.flight||'';
+  showPhoto();
+  $('form').classList.remove('hide');$('actions').classList.add('hide');
+  window.scrollTo(0,0);
+}
+function closeForm(){editId=null;pending=null;curPhoto=null;$('form').classList.add('hide');$('actions').classList.remove('hide')}
 $('fsave').onclick=()=>{
   const name=$('fname').value.trim(),gate=$('fgate').value.trim().toUpperCase(),flight=$('fflight').value.trim().toUpperCase();
-  if(!name||!gate){alert('Le nom et la porte sont obligatoires.');return}
-  if(editId){const x=S.items.find(i=>i.id===editId);if(x){x.name=name;x.gate=gate;x.flight=flight}}
-  else S.items.push({id:Date.now()+''+Math.random().toString(36).slice(2,6),name,gate,flight,t:Date.now(),key:pending?pending.key:''});
-  save();closeForm();render();msg('✅ Enregistré',true);if(navigator.vibrate)navigator.vibrate(80);
+  if(!name||!gate){$('ferr').textContent='Le nom et la porte sont obligatoires.';return}
+  let item;
+  if(editId){item=S.items.find(i=>i.id===editId);if(item){item.name=name;item.gate=gate;item.flight=flight;item.photo=curPhoto}}
+  else{item={id:Date.now()+''+Math.random().toString(36).slice(2,6),name,gate,flight,t:Date.now(),key:pending?pending.key:'',photo:curPhoto};S.items.push(item)}
+  let warn='';
+  if(!save()){if(item)item.photo=null;save();warn=' (photo non gardée : mémoire pleine)'}
+  closeForm();render();msg(warn?'⚠️ Enregistré'+warn:'✅ Enregistré',!warn);
+  if(navigator.vibrate)navigator.vibrate(80);
 };
 $('fcancel').onclick=closeForm;
 $('btnAdd').onclick=()=>{editId=null;pending=null;openForm({},'Ajouter un passager','')};
+
+// Photo de la carte (preuve)
+function shrink(file){return new Promise((res,rej)=>{
+  const fr=new FileReader();
+  fr.onerror=rej;
+  fr.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{
+    const k=Math.min(1,900/Math.max(im.width,im.height)),w=Math.round(im.width*k),h=Math.round(im.height*k);
+    const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);
+    res({d:c.toDataURL('image/jpeg',.6),w,h});};im.src=fr.result};
+  fr.readAsDataURL(file);
+})}
+$('btnPhoto').onclick=()=>{photoFirst=true;$('pfile').value='';$('pfile').click()};
+$('fphoto').onclick=()=>{photoFirst=false;$('pfile').value='';$('pfile').click()};
+$('pfile').onchange=async e=>{
+  const f=e.target.files&&e.target.files[0];if(!f)return;
+  try{
+    const ph=await shrink(f);
+    if(photoFirst){editId=null;pending=null;openForm({},'Photo de la carte','Saisissez le nom et la porte.')}
+    curPhoto=ph;showPhoto();
+    if(photoFirst||!$('fname').value){
+      try{ // lit le code sur la photo si possible
+        const r=await new ZXing.BrowserMultiFormatReader().decodeFromImageUrl(ph.d),p=parse(r.getText());
+        if(p){pending=p;$('fname').value=p.name;$('fflight').value=p.flight;$('fnote').textContent='Code lu sur la photo. Saisissez la porte.'}
+      }catch(x){}
+    }
+  }catch(x){msg('Photo impossible à traiter')}
+};
+
 function onCode(raw){
   if(Date.now()-lastScan<1500)return;lastScan=Date.now();
   const p=parse(raw.trim());
   if(!p){msg('Code non reconnu comme carte d’embarquement');return}
   if(S.items.some(x=>x.key&&x.key===p.key)){stopCam();msg('⚠️ Carte déjà scannée sur cette vacation');return}
   editId=null;pending=p;
-  openForm({name:p.name,flight:p.flight},'Carte scannée','La porte n’est pas sur la carte : saisissez-la.');
+  openForm({name:p.name,flight:p.flight},'Carte scannée','La porte n’est pas dans le code : saisissez-la (vous pouvez aussi prendre la photo).');
 }
 function render(){
   $('start').classList.toggle('hide',!!S);$('main').classList.toggle('hide',!S);
@@ -174,23 +234,23 @@ function render(){
   $('count').textContent=S.items.length;
   $('info').textContent=S.agent+' · '+S.zone+' · depuis '+fmt(S.start);
   $('list').innerHTML=S.items.length?S.items.slice().reverse().map(x=>
-    `<div class="item"><div class="top"><b>${esc(x.name)}</b><span class="mu">${fmt(x.t)}</span></div>
-     <div class="mu">Porte ${esc(x.gate)}${x.flight?' · Vol '+esc(x.flight):''}</div>
-     <div class="acts"><button class="sm sec" data-e="${x.id}">Modifier</button><button class="sm dng" data-d="${x.id}">Supprimer</button></div></div>`).join('')
+    `<div class="item">${x.photo?`<img class="thumb" src="${x.photo.d}" alt="">`:''}<div class="tx"><div class="top"><b>${esc(x.name)}</b><span class="mu">${fmt(x.t)}</span></div>
+     <div class="mu">Porte ${esc(x.gate)}${x.flight?' · Vol '+esc(x.flight):''}${x.photo?' · 📸':''}</div>
+     <div class="acts"><button class="sm sec" data-e="${x.id}">Modifier</button><button class="sm dng" data-d="${x.id}">Supprimer</button></div></div></div>`).join('')
     :'<div class="mu" style="text-align:center">Aucun passager pour l’instant</div>';
 }
-$('list').onclick=e=>{
+$('list').onclick=async e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.e){const x=S.items.find(i=>i.id===b.dataset.e);if(x){editId=x.id;pending=null;openForm(x,'Modifier le passager','')}}
-  if(b.dataset.d&&confirm('Supprimer ce passager ?')){S.items=S.items.filter(i=>i.id!==b.dataset.d);save();render()}
+  if(b.dataset.d&&await ask('Supprimer ce passager ?','Supprimer')){S.items=S.items.filter(i=>i.id!==b.dataset.d);save();render()}
 };
 async function startCam(){
-  if(!window.ZXing){msg('Scanner indisponible, utilisez l’ajout manuel');return}
+  if(!window.ZXing){msg('Scanner indisponible, utilisez la photo ou l’ajout manuel');return}
   try{
     reader=new ZXing.BrowserMultiFormatReader();
     $('vid').classList.remove('hide');$('btnStop').classList.remove('hide');$('btnScan').classList.add('hide');
     await reader.decodeFromVideoDevice(null,'vid',r=>{if(r)onCode(r.getText())});
-  }catch(e){stopCam();msg('Caméra non autorisée ou indisponible : utilisez l’ajout manuel')}
+  }catch(e){stopCam();msg('Caméra non autorisée : utilisez la photo ou l’ajout manuel')}
 }
 function stopCam(){
   try{reader&&reader.reset()}catch(e){}reader=null;
@@ -198,14 +258,13 @@ function stopCam(){
 }
 $('btnScan').onclick=startCam;$('btnStop').onclick=stopCam;
 $('btnStart').onclick=()=>{
-  const a=$('agent').value.trim();if(!a){alert('Saisissez le nom de l’agent.');return}
-  try{localStorage.setItem(AKEY,a)}catch(e){}
+  const a=$('agent').value.trim();if(!a){$('serr').textContent='Saisissez le nom de l’agent.';return}
+  $('serr').textContent='';try{localStorage.setItem(AKEY,a)}catch(e){}
   S={start:Date.now(),agent:a,zone:$('zone').value.trim()||'Terminal 2AC',items:[]};save();render();
 };
-$('btnReset').onclick=()=>{if(confirm('Effacer cette vacation sans rapport ?')){S=null;try{localStorage.removeItem(KEY)}catch(e){}stopCam();closeForm();render()}};
+$('btnReset').onclick=async()=>{if(await ask('Effacer cette vacation sans rapport ?','Effacer')){S=null;try{localStorage.removeItem(KEY)}catch(e){}stopCam();closeForm();render()}};
 
-$('btnEnd').onclick=async()=>{
-  stopCam();
+function buildPdf(){
   const end=Date.now(),n=S.items.length,{jsPDF}=window.jspdf,d=new jsPDF();
   const ms=end-S.start,h=Math.floor(ms/3600000),m=Math.round(ms%3600000/60000),dur=(h?h+' h ':'')+m+' min';
   const dt=new Date(S.start).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -213,7 +272,7 @@ $('btnEnd').onclick=async()=>{
   S.items.forEach(x=>{gates[x.gate]=(gates[x.gate]||0)+1;if(x.flight)flights.add(x.flight)});
   const gl=Object.entries(gates).sort((a,b)=>b[1]-a[1]);
   const perH=ms>=1800000?(n/(ms/3600000)).toFixed(1).replace('.',','):null;
-  const times=S.items.map(x=>x.t);
+  const times=S.items.map(x=>x.t),nph=S.items.filter(x=>x.photo).length;
   d.setFontSize(18);d.text('SAMSIC APMR X ALBA',14,18);
   d.setFontSize(12);d.text('Rapport de vacation - Fauteuil autonome',14,26);
   d.setFontSize(10);
@@ -221,9 +280,9 @@ $('btnEnd').onclick=async()=>{
   d.text('Horaire : '+fmt(S.start)+' - '+fmt(end)+' ('+dur+')',14,54);
   d.setFontSize(13);d.text('Statistiques',14,66);d.setFontSize(10);
   let y=73;
-  const L=['Passagers transportés : '+n,'Vols concernés : '+(flights.size||'-'),'Portes desservies : '+(gl.length?gl.map(g=>g[0]+' ('+g[1]+')').join(', '):'-')];
+  const L=['Passagers transportés : '+n,'Vols concernés : '+(flights.size||'-'),'Portes desservies : '+(gl.length?gl.map(g=>g[0]+' ('+g[1]+')').join(', '):'-'),'Preuves photo : '+nph+' / '+n];
   if(perH)L.push('Moyenne : '+perH+' passagers / heure');
-  if(n)L.push('Premier passager : '+fmt(Math.min(...times))+'  ·  Dernier : '+fmt(Math.max(...times)));
+  if(n)L.push('Premier passager : '+fmt(Math.min(...times))+'  -  Dernier : '+fmt(Math.max(...times)));
   L.forEach(t=>{d.splitTextToSize(t,180).forEach(l=>{d.text(l,14,y);y+=6})});
   y+=4;d.setFontSize(13);d.text('Compte rendu',14,y);y+=7;d.setFontSize(10);
   const obs=$('obs').value.trim();
@@ -238,15 +297,52 @@ $('btnEnd').onclick=async()=>{
     if(y>278){d.addPage();y=20}
     d.text(String(i+1),14,y);d.text(fmt(x.t),26,y);d.text(d.splitTextToSize(x.name,80)[0],46,y);d.text(x.flight||'-',130,y);d.text(x.gate,165,y);y+=7;
   });
+  const ph=S.items.filter(x=>x.photo);
+  if(ph.length){
+    d.addPage();d.setFontSize(13);d.text('Preuves - cartes d’embarquement',14,18);d.setFontSize(9);
+    let cx=14,cy=26,rowH=0;
+    ph.forEach(x=>{
+      let w=85,hh=w*x.photo.h/x.photo.w;if(hh>105){hh=105;w=hh*x.photo.w/x.photo.h}
+      if(cx>14&&cx+w>196){cx=14;cy+=rowH+12;rowH=0}
+      if(cy+hh+12>282){d.addPage();cx=14;cy=20;rowH=0}
+      d.addImage(x.photo.d,'JPEG',cx,cy,w,hh);
+      d.text(d.splitTextToSize(x.name+' - '+(x.flight||'-')+' - Porte '+x.gate+' - '+fmt(x.t),w)[0],cx,cy+hh+5);
+      rowH=Math.max(rowH,hh);cx+=95;
+    });
+  }
   const pc=d.getNumberOfPages();
   for(let p=1;p<=pc;p++){d.setPage(p);d.setFontSize(8);d.text('SAMSIC APMR X ALBA - Développé par Lebkiri Lahcene - Page '+p+'/'+pc,14,290)}
+  return d;
+}
+async function savePdf(blob,name){
+  let why='';
+  try{ // 1. enregistrement via Claude
+    if(typeof claude!=='undefined'&&claude.use){
+      const dl=await claude.use('downloads');
+      if(dl){await dl.save({filename:name,data:blob});return {ok:true}}
+    }
+  }catch(e){if(e&&e.code==='declined')return {ok:false,declined:true};why=(e&&(e.code||e.message))||'erreur'}
+  try{ // 2. partage natif du téléphone
+    const f=new File([blob],name,{type:'application/pdf'});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return {ok:true}}
+  }catch(e){if(e&&e.name==='AbortError')return {ok:false,declined:true};why+=' partage:'+(e&&e.message)}
+  try{ // 3. téléchargement classique
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
+    document.body.appendChild(a);a.click();a.remove();return {ok:true,weak:true}
+  }catch(e){why+=' lien:'+(e&&e.message)}
+  return {ok:false,why};
+}
+$('btnEnd').onclick=async()=>{
+  stopCam();$('eerr').textContent='';
+  let d;
+  try{d=buildPdf()}catch(e){$('eerr').textContent='Erreur de création du PDF : '+(e&&e.message||e);return}
   const name='rapport-apmr-alba-'+new Date(S.start).toISOString().slice(0,10)+'.pdf';
-  try{
-    const dl=await claude.use('downloads');
-    if(!dl){msg('Téléchargement indisponible dans cette vue');return}
-    await dl.save({filename:name,data:d.output('blob')});
-    if(confirm('PDF enregistré. Clôturer la vacation et remettre à zéro ?')){S=null;try{localStorage.removeItem(KEY)}catch(e){}$('obs').value='';render()}
-  }catch(e){msg('PDF non enregistré ('+(e&&e.code||'erreur')+'). Vos données sont conservées.')}
+  const r=await savePdf(d.output('blob'),name);
+  if(r.declined){$('eerr').textContent='Enregistrement annulé.';return}
+  if(!r.ok){$('eerr').textContent='PDF non enregistré ('+r.why+'). Vos données sont conservées.';return}
+  if(await ask(r.weak?'Téléchargement lancé. Si le PDF n’apparaît pas, ne clôturez pas. Clôturer la vacation ?':'PDF enregistré. Clôturer la vacation et remettre à zéro ?','Clôturer')){
+    S=null;try{localStorage.removeItem(KEY)}catch(e){}$('obs').value='';render();
+  }
 };
 load();render();
 (function(){const s=$('splash');let done=false;

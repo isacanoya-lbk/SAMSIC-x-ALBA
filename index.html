@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SAMSIC APMR X ALBA</title>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--tx:#14213d;--mu:#6b7280;--ac:#0b5ed7;--ok:#16a34a;--bd:#e2e6ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1420;--card:#1a2133;--tx:#eef1f8;--mu:#9aa4b8;--ac:#5b9bff;--ok:#4ade80;--bd:#2a3350}}
+:root[data-theme="dark"]{--bg:#0f1420;--card:#1a2133;--tx:#eef1f8;--mu:#9aa4b8;--ac:#5b9bff;--ok:#4ade80;--bd:#2a3350}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px;max-width:520px;margin:0 auto}
+h1{font-size:19px;margin:4px 0 12px;letter-spacing:.3px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--mu);margin:8px 0 4px}
+input,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:16px;font-family:inherit}
+button{width:100%;padding:13px;border:0;border-radius:12px;font-size:16px;font-weight:600;background:var(--ac);color:#fff;margin-top:10px}
+button.sec{background:transparent;color:var(--ac);border:1px solid var(--ac)}
+button.dng{background:transparent;color:#dc2626;border:1px solid #dc2626}
+button.sm{width:auto;padding:7px 12px;font-size:13px;margin:0 0 0 6px;border-radius:9px}
+.count{font-size:56px;font-weight:800;text-align:center;line-height:1}
+.sub{text-align:center;color:var(--mu);font-size:13px;margin-top:4px}
+video{width:100%;border-radius:12px;background:#000;max-height:260px;object-fit:cover}
+.item{padding:10px 0;border-bottom:1px solid var(--bd)}.item:last-child{border:0}
+.top{display:flex;justify-content:space-between;gap:8px;font-size:15px}
+.mu{color:var(--mu);font-size:13px}
+.acts{display:flex;justify-content:flex-end;margin-top:6px}
+#msg{min-height:20px;text-align:center;font-size:14px;margin-top:8px}
+.hide{display:none}
+footer{text-align:center;color:var(--mu);font-size:12px;margin:18px 0 8px}
+#splash{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s;padding:16px}
+#splash.out{opacity:0;pointer-events:none}
+#splash svg{width:min(92vw,420px);height:auto;overflow:visible}
+#splash h2{margin:14px 0 4px;font-size:24px;letter-spacing:.8px;text-align:center}
+#splash p{margin:0;color:var(--mu);font-size:13px}
+.drive{animation:drive 2.8s cubic-bezier(.22,.7,.3,1) both}
+.bob{animation:bob .5s ease-in-out 5}
+.wheel{transform-box:fill-box;transform-origin:center;animation:spin .55s linear 5}
+.beacon{animation:blink .7s steps(2) infinite}
+.ping{transform-box:fill-box;transform-origin:center;opacity:0;animation:ping 1.4s ease-out 2.8s infinite}
+.fl{stroke:var(--bd)}
+@keyframes drive{from{transform:translateX(-340px)}to{transform:translateX(0)}}
+@keyframes bob{50%{transform:translateY(-1.5px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{50%{opacity:.25}}
+@keyframes ping{0%{opacity:.7;transform:scale(.3)}100%{opacity:0;transform:scale(1.6)}}
+@media (prefers-reduced-motion:reduce){.drive,.bob,.wheel{animation:none}}
+</style>
+</head>
+<body>
+<div id="splash" aria-hidden="true">
+<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+<line class="fl" x1="-60" y1="178" x2="360" y2="178" stroke-width="2"/>
+<ellipse cx="150" cy="180" rx="110" ry="6" fill="#000" opacity=".12"/>
+<g class="drive"><g class="bob">
+<circle class="ping" cx="96" cy="20" r="40" fill="none" stroke="#e11d2e" stroke-width="2"/>
+<rect x="88" y="28" width="7" height="112" rx="3" fill="#9aa1ab"/>
+<rect x="72" y="8" width="44" height="22" rx="5" fill="#1b1f27"/>
+<rect x="78" y="13" width="16" height="7" rx="2" fill="#3b4252"/>
+<circle class="beacon" cx="96" cy="34" r="5" fill="#ff2d3d"/>
+<rect x="58" y="72" width="22" height="62" rx="5" fill="#1d2230"/>
+<path d="M72 126 H196 L210 150 H72 Z" fill="#1d2230"/>
+<path d="M104 96 H168 V112 H104 Z" fill="#9aa1ab"/>
+<rect x="168" y="80" width="5" height="34" rx="2" fill="#2a2f3b" transform="rotate(18 170 97)"/>
+<path d="M64 138 H236 L250 168 H92 Q70 168 64 150 Z" fill="#c9ced6"/>
+<path d="M92 150 H236 L246 168 H98 Z" fill="#f7f7f5"/>
+<text x="122" y="163" font-size="12" font-weight="800" fill="#1b1f27" font-family="system-ui,sans-serif">ALBA</text>
+<rect x="216" y="96" width="16" height="60" rx="7" fill="#1b1f27"/>
+<rect x="216" y="104" width="16" height="3" fill="#fff" opacity=".8"/>
+<rect x="54" y="130" width="14" height="28" rx="6" fill="#1b1f27"/>
+<circle cx="236" cy="170" r="8" fill="#f4f4f2" stroke="#8b919b" stroke-width="3"/>
+<g class="wheel"><circle cx="100" cy="156" r="21" fill="#6b7078"/><circle cx="100" cy="156" r="12" fill="#b4bac4"/><path d="M100 144V168M88 156H112M91.5 147.5L108.5 164.5M108.5 147.5L91.5 164.5" stroke="#6b7078" stroke-width="2"/></g>
+</g></g>
+</svg>
+<h2>SAMSIC APMR X ALBA</h2>
+<p>Développé par Lebkiri Lahcene</p>
+</div>
+
+<h1>♿ SAMSIC APMR X ALBA</h1>
+
+<div id="start" class="card">
+  <label>Nom de l’agent</label><input id="agent" placeholder="Nom Prénom" autocomplete="name">
+  <label>Terminal</label><input id="zone" value="Terminal 2AC">
+  <button id="btnStart">Démarrer la vacation</button>
+</div>
+
+<div id="main" class="hide">
+  <div class="card">
+    <div class="count" id="count">0</div>
+    <div class="sub">passagers transportés</div>
+    <div class="sub" id="info"></div>
+  </div>
+
+  <div id="form" class="card hide">
+    <b id="ftitle"></b>
+    <div class="mu" id="fnote"></div>
+    <label>Nom du passager</label><input id="fname" autocapitalize="characters">
+    <label>Porte d’embarquement</label><input id="fgate" placeholder="Ex : K42" autocapitalize="characters">
+    <label>N° de vol (facultatif)</label><input id="fflight" placeholder="Ex : AF1234" autocapitalize="characters">
+    <button id="fsave">Enregistrer</button>
+    <button id="fcancel" class="sec">Annuler</button>
+  </div>
+
+  <div id="actions" class="card">
+    <video id="vid" class="hide" playsinline muted></video>
+    <button id="btnScan">📷 Scanner une carte d’embarquement</button>
+    <button id="btnStop" class="sec hide">Arrêter la caméra</button>
+    <button id="btnAdd" class="sec">✏️ Ajouter manuellement</button>
+    <div id="msg"></div>
+  </div>
+
+  <div class="card"><div id="list"></div></div>
+
+  <div class="card">
+    <label>Observations pour le compte rendu (facultatif)</label>
+    <textarea id="obs" rows="3" placeholder="Incident, remarque, panne, retard…"></textarea>
+    <button id="btnEnd">Terminer et télécharger le rapport PDF</button>
+    <button id="btnReset" class="dng">Annuler la vacation (effacer)</button>
+  </div>
+</div>
+<footer>Développé par Lebkiri Lahcene</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let S=null, reader=null, lastScan=0, editId=null, pending=null;
+const KEY='apmr_alba_v2', AKEY='apmr_alba_agent';
+function load(){try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){S=null}
+  try{const a=localStorage.getItem(AKEY);if(a)$('agent').value=a}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return String(h)}
+function fmt(t){return new Date(t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
+function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function msg(t,ok){const m=$('msg');m.textContent=t;m.style.color=ok?'var(--ok)':'#dc2626'}
+
+// Carte d’embarquement IATA (BCBP) : nom + vol. La porte n’y figure pas.
+function parse(raw){
+  if(raw.length<48||raw[0]!=='M')return null;
+  let nm=raw.substr(2,20).trim(),[last,first='']=nm.split('/');
+  first=first.replace(/\s+(MR|MS|MRS|MISS|MSTR|DR)$/,'').trim();
+  return {name:(last+' '+first).trim(),
+    flight:raw.substr(36,3).trim()+raw.substr(39,5).trim().replace(/^0+/,''),
+    key:hash(raw.substr(2,28)+raw.substr(36,13)+raw.substr(44,3))};
+}
+function openForm(d,title,note){
+  stopCam();
+  $('ftitle').textContent=title;$('fnote').textContent=note||'';
+  $('fname').value=d.name||'';$('fgate').value=d.gate||'';$('fflight').value=d.flight||'';
+  $('form').classList.remove('hide');$('actions').classList.add('hide');
+  setTimeout(()=>$(d.name?'fgate':'fname').focus(),50);
+}
+function closeForm(){editId=null;pending=null;$('form').classList.add('hide');$('actions').classList.remove('hide')}
+$('fsave').onclick=()=>{
+  const name=$('fname').value.trim(),gate=$('fgate').value.trim().toUpperCase(),flight=$('fflight').value.trim().toUpperCase();
+  if(!name||!gate){alert('Le nom et la porte sont obligatoires.');return}
+  if(editId){const x=S.items.find(i=>i.id===editId);if(x){x.name=name;x.gate=gate;x.flight=flight}}
+  else S.items.push({id:Date.now()+''+Math.random().toString(36).slice(2,6),name,gate,flight,t:Date.now(),key:pending?pending.key:''});
+  save();closeForm();render();msg('✅ Enregistré',true);if(navigator.vibrate)navigator.vibrate(80);
+};
+$('fcancel').onclick=closeForm;
+$('btnAdd').onclick=()=>{editId=null;pending=null;openForm({},'Ajouter un passager','')};
+function onCode(raw){
+  if(Date.now()-lastScan<1500)return;lastScan=Date.now();
+  const p=parse(raw.trim());
+  if(!p){msg('Code non reconnu comme carte d’embarquement');return}
+  if(S.items.some(x=>x.key&&x.key===p.key)){stopCam();msg('⚠️ Carte déjà scannée sur cette vacation');return}
+  editId=null;pending=p;
+  openForm({name:p.name,flight:p.flight},'Carte scannée','La porte n’est pas sur la carte : saisissez-la.');
+}
+function render(){
+  $('start').classList.toggle('hide',!!S);$('main').classList.toggle('hide',!S);
+  if(!S)return;
+  $('count').textContent=S.items.length;
+  $('info').textContent=S.agent+' · '+S.zone+' · depuis '+fmt(S.start);
+  $('list').innerHTML=S.items.length?S.items.slice().reverse().map(x=>
+    `<div class="item"><div class="top"><b>${esc(x.name)}</b><span class="mu">${fmt(x.t)}</span></div>
+     <div class="mu">Porte ${esc(x.gate)}${x.flight?' · Vol '+esc(x.flight):''}</div>
+     <div class="acts"><button class="sm sec" data-e="${x.id}">Modifier</button><button class="sm dng" data-d="${x.id}">Supprimer</button></div></div>`).join('')
+    :'<div class="mu" style="text-align:center">Aucun passager pour l’instant</div>';
+}
+$('list').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.e){const x=S.items.find(i=>i.id===b.dataset.e);if(x){editId=x.id;pending=null;openForm(x,'Modifier le passager','')}}
+  if(b.dataset.d&&confirm('Supprimer ce passager ?')){S.items=S.items.filter(i=>i.id!==b.dataset.d);save();render()}
+};
+async function startCam(){
+  if(!window.ZXing){msg('Scanner indisponible, utilisez l’ajout manuel');return}
+  try{
+    reader=new ZXing.BrowserMultiFormatReader();
+    $('vid').classList.remove('hide');$('btnStop').classList.remove('hide');$('btnScan').classList.add('hide');
+    await reader.decodeFromVideoDevice(null,'vid',r=>{if(r)onCode(r.getText())});
+  }catch(e){stopCam();msg('Caméra non autorisée ou indisponible : utilisez l’ajout manuel')}
+}
+function stopCam(){
+  try{reader&&reader.reset()}catch(e){}reader=null;
+  $('vid').classList.add('hide');$('btnStop').classList.add('hide');$('btnScan').classList.remove('hide');
+}
+$('btnScan').onclick=startCam;$('btnStop').onclick=stopCam;
+$('btnStart').onclick=()=>{
+  const a=$('agent').value.trim();if(!a){alert('Saisissez le nom de l’agent.');return}
+  try{localStorage.setItem(AKEY,a)}catch(e){}
+  S={start:Date.now(),agent:a,zone:$('zone').value.trim()||'Terminal 2AC',items:[]};save();render();
+};
+$('btnReset').onclick=()=>{if(confirm('Effacer cette vacation sans rapport ?')){S=null;try{localStorage.removeItem(KEY)}catch(e){}stopCam();closeForm();render()}};
+
+$('btnEnd').onclick=async()=>{
+  stopCam();
+  const end=Date.now(),n=S.items.length,{jsPDF}=window.jspdf,d=new jsPDF();
+  const ms=end-S.start,h=Math.floor(ms/3600000),m=Math.round(ms%3600000/60000),dur=(h?h+' h ':'')+m+' min';
+  const dt=new Date(S.start).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const gates={},flights=new Set();
+  S.items.forEach(x=>{gates[x.gate]=(gates[x.gate]||0)+1;if(x.flight)flights.add(x.flight)});
+  const gl=Object.entries(gates).sort((a,b)=>b[1]-a[1]);
+  const perH=ms>=1800000?(n/(ms/3600000)).toFixed(1).replace('.',','):null;
+  const times=S.items.map(x=>x.t);
+  d.setFontSize(18);d.text('SAMSIC APMR X ALBA',14,18);
+  d.setFontSize(12);d.text('Rapport de vacation - Fauteuil autonome',14,26);
+  d.setFontSize(10);
+  d.text('Date : '+dt,14,36);d.text('Agent : '+S.agent,14,42);d.text('Lieu : '+S.zone,14,48);
+  d.text('Horaire : '+fmt(S.start)+' - '+fmt(end)+' ('+dur+')',14,54);
+  d.setFontSize(13);d.text('Statistiques',14,66);d.setFontSize(10);
+  let y=73;
+  const L=['Passagers transportés : '+n,'Vols concernés : '+(flights.size||'-'),'Portes desservies : '+(gl.length?gl.map(g=>g[0]+' ('+g[1]+')').join(', '):'-')];
+  if(perH)L.push('Moyenne : '+perH+' passagers / heure');
+  if(n)L.push('Premier passager : '+fmt(Math.min(...times))+'  ·  Dernier : '+fmt(Math.max(...times)));
+  L.forEach(t=>{d.splitTextToSize(t,180).forEach(l=>{d.text(l,14,y);y+=6})});
+  y+=4;d.setFontSize(13);d.text('Compte rendu',14,y);y+=7;d.setFontSize(10);
+  const obs=$('obs').value.trim();
+  let para='Vacation du '+dt+', de '+fmt(S.start)+' à '+fmt(end)+', assurée par '+S.agent+' au '+S.zone+'. ';
+  para+=n?'Le fauteuil autonome ALBA a conduit '+n+' passager'+(n>1?'s':'')+' jusqu’à leur porte d’embarquement'+(flights.size?', sur '+flights.size+' vol'+(flights.size>1?'s':'')+' ('+[...flights].join(', ')+')':'')+'. La porte la plus desservie est la '+gl[0][0]+' ('+gl[0][1]+' passager'+(gl[0][1]>1?'s':'')+').'
+    :'Aucun passager n’a été transporté avec le fauteuil autonome ALBA pendant cette vacation.';
+  para+=obs?' Observations : '+obs:' Aucune observation particulière à signaler.';
+  d.splitTextToSize(para,180).forEach(l=>{d.text(l,14,y);y+=5.5});
+  y+=6;d.setFontSize(13);d.text('Détail des passagers',14,y);y+=7;d.setFontSize(10);
+  d.text('N°',14,y);d.text('Heure',26,y);d.text('Nom',46,y);d.text('Vol',130,y);d.text('Porte',165,y);y+=2;d.line(14,y,196,y);y+=6;
+  S.items.forEach((x,i)=>{
+    if(y>278){d.addPage();y=20}
+    d.text(String(i+1),14,y);d.text(fmt(x.t),26,y);d.text(d.splitTextToSize(x.name,80)[0],46,y);d.text(x.flight||'-',130,y);d.text(x.gate,165,y);y+=7;
+  });
+  const pc=d.getNumberOfPages();
+  for(let p=1;p<=pc;p++){d.setPage(p);d.setFontSize(8);d.text('SAMSIC APMR X ALBA - Développé par Lebkiri Lahcene - Page '+p+'/'+pc,14,290)}
+  const name='rapport-apmr-alba-'+new Date(S.start).toISOString().slice(0,10)+'.pdf';
+  try{
+    const dl=await claude.use('downloads');
+    if(!dl){msg('Téléchargement indisponible dans cette vue');return}
+    await dl.save({filename:name,data:d.output('blob')});
+    if(confirm('PDF enregistré. Clôturer la vacation et remettre à zéro ?')){S=null;try{localStorage.removeItem(KEY)}catch(e){}$('obs').value='';render()}
+  }catch(e){msg('PDF non enregistré ('+(e&&e.code||'erreur')+'). Vos données sont conservées.')}
+};
+load();render();
+(function(){const s=$('splash');let done=false;
+function hide(){if(done)return;done=true;s.classList.add('out');setTimeout(()=>s.remove(),700)}
+s.onclick=hide;setTimeout(hide,matchMedia('(prefers-reduced-motion:reduce)').matches?600:4200)})();
+</script>
+</body>
+</html>
